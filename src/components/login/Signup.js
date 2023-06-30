@@ -32,7 +32,7 @@ function Signup() {
       cnfpassref.current.value = "";
       try {
         await axios.post(
-          "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDW55X8yrfY3DYfPEVnvQZamzWMl7FuhzE",
+          "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDc33hL8Bm9dd4WtEHpLT-Ap9-_rCCjEO4",
           Userdetails
         );
   
@@ -95,7 +95,7 @@ function Signup() {
                 <div className="d-flex flex-row align-items-center mb-4">
                   <MDBIcon fas icon="key me-3" size="lg" />
                   <MDBInput
-                    label="Repeat your password"
+                    label="confirm password"
                     id="form4"
                     type="password"
                     ref={cnfpassref}

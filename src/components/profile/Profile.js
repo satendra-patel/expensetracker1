@@ -18,7 +18,7 @@ export default function Profile() {
         }
         console.log('mydetails',details);
         try {
-            const response=await axios.post('https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyDW55X8yrfY3DYfPEVnvQZamzWMl7FuhzE',details);
+            const response=await axios.post('https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyDc33hL8Bm9dd4WtEHpLT-Ap9-_rCCjEO4',details);
             console.log('successful',response);
             nameref.current.value='';
             photourl.current.value='';
