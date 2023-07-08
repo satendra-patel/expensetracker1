@@ -1,12 +1,17 @@
-import React, { useRef ,useEffect,useState} from "react";
+import React, { useRef ,useEffect,useState, useContext} from "react";
 import axios from "axios";
-
+import AuthContext from "../../store/Authstate";
+import {useHistory} from 'react-router-dom';
 
 export default function Profile() {
+    const  history=useHistory();
+    const Auth=useContext(AuthContext);
     const nameref=useRef('');
     const photourl=useRef('');
     const idToken=localStorage.getItem("idToken");
     const [first,setFirst]=useState([]);
+
+    const[isVerify,setisVerify]=useState(localStorage.getItem('email'))
 
     const Token={
         idToken:idToken
@@ -19,7 +24,7 @@ export default function Profile() {
         }
         myfun();
 
-    },[])
+    },[isVerify]);
 
     let preName='';
     let preUrl = "";
@@ -60,13 +65,24 @@ export default function Profile() {
         try {
             const response=await axios.post('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyDc33hL8Bm9dd4WtEHpLT-Ap9-_rCCjEO4',details);
             localStorage.setItem('email',response.data.email);
+            setisVerify(localStorage.getItem('email'));
             console.log('email sent successfully');
         } catch (error) {
             console.log(error);
         }   
     }
+    const logout=()=>{
+        Auth.logout();
+        history.replace('/login')
+    }
   return (
     <div>
+         <button
+            onClick={logout}
+            class="btn btn-outline-dark float-right"
+            data-mdb-ripple-color="dark"
+          >Logout
+            </button>
         <h3 className='text-center'>Contacts Details</h3>
         <hr />
         <div className='container text-center'>

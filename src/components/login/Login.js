@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
+import React, { useContext, useRef,useState } from "react";
 import axios from "axios";
-import {Link,useNavigate} from 'react-router-dom';
+import { Link, useHistory } from "react-router-dom";
 import {
   MDBBtn,
   MDBContainer,
@@ -12,49 +12,76 @@ import {
   MDBInput,
   MDBIcon,
 } from "mdb-react-ui-kit";
+import AuthContext from "../../store/auth-context";
 
 function Login() {
-    const  navigate=useNavigate();
- 
+  const [isloading, setisloading] = useState(false);
+  const auth = useContext(AuthContext);
+
+  const history = useHistory();
+
   const emailref = useRef("");
   const passref = useRef("");
 
   const submithandler = async (event) => {
     event.preventDefault();
-    
-      const Userdetails = {
-        email: emailref.current.value,
-        password: passref.current.value,
-        returnSecureToken: true,
-      };
-      emailref.current.value="";
-      passref.current.value = "";
-     try {
-        const respose = await axios.post(
-            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDc33hL8Bm9dd4WtEHpLT-Ap9-_rCCjEO4",
-            Userdetails
-          );
-          console.log(respose);
-          console.log("User has successfully logged in",respose.data.idToken);
-          localStorage.setItem('idToken',respose.data.idToken);
-          navigate("/expenses")
-        
-        
-     } catch (error) {
-        console.log(error.response.data.error.message)
-        alert(error.response.data.error.message);
-     }
-      
-      
-      
-      
-       
 
-      
-     
+    const Userdetails = {
+      email: emailref.current.value,
+      password: passref.current.value,
+      returnSecureToken: true,
+    };
+    emailref.current.value = "";
+    passref.current.value = "";
+    try {
+      const respose = await axios.post(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDc33hL8Bm9dd4WtEHpLT-Ap9-_rCCjEO4",
+        Userdetails
+      );
+      console.log(respose);
+      console.log("User has successfully logged in", respose.data.idToken);
+      localStorage.setItem("idToken", respose.data.idToken);
+      auth.login(localStorage.getItem("idToken"));
+      history.replace("/expenses");
+    } catch (error) {
+      console.log(error.response.data.error.message);
+      alert(error.response.data.error.message);
+    }
+
     //   alert("Password Doesn't Match");
-    
+   
   };
+  const forgetpass =async()=>{
+   
+
+    if(emailref.current.value === "")
+    {
+      alert('please fill Email');
+    }
+    else{
+      setisloading(true);
+      const details = {
+      requestType:"PASSWORD_RESET",
+      email: emailref.current.value
+     }
+     try {
+        const response = await axios.post(
+          "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyDc33hL8Bm9dd4WtEHpLT-Ap9-_rCCjEO4",
+          details
+        );
+        if(response.data.email)
+        {
+          setisloading(false);
+        }
+      
+      } catch (error) {
+        alert(error.response.data.error.message);
+        setisloading(false);
+
+      }
+
+    }
+  }
 
   return (
     <form onSubmit={submithandler}>
@@ -70,7 +97,6 @@ function Login() {
                 <p classNAme="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">
                   Login
                 </p>
-                
                 <div className="d-flex flex-row align-items-center mb-4">
                   <MDBIcon fas icon="envelope me-3" size="lg" />
                   <MDBInput
@@ -89,18 +115,21 @@ function Login() {
                     type="password"
                     ref={passref}
                     required
+                    
                   />
                 </div>
-               
+                
+                {isloading ? <p>Password is resting.. Check Your Mail</p> : <span style={{cursor:"pointer",color:'red'}} className="mx-2" color="tertiary" rippleColor="dark" onClick={forgetpass}>
+                  Froget Password ?
+                </span>}
+                <br/>
                 <MDBBtn className="mb-4" size="lg" type="submit">
                   Login
                 </MDBBtn>
                 Don't Have An Account
-                <MDBBtn className="mx-2" color="tertiary" rippleColor="light" >
-                <Link to='/'>
-                  Sign Up Now
-                </Link> 
-                </MDBBtn>
+                <span className="mx-2" color="tertiary" rippleColor="light">
+                  <Link to="/">Sign Up Now</Link>
+                </span>
               </MDBCol>
 
               <MDBCol
@@ -114,6 +143,7 @@ function Login() {
                 />
               </MDBCol>
             </MDBRow>
+      
           </MDBCardBody>
         </MDBCard>
       </MDBContainer>
