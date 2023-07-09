@@ -13,10 +13,15 @@ import {
   MDBIcon,
 } from "mdb-react-ui-kit";
 import AuthContext from "../../store/auth-context";
+import {useDispatch,useSelector} from 'react-redux';
+import { authActions } from "../../store/redux";
 
 function Login() {
   const [isloading, setisloading] = useState(false);
-  const auth = useContext(AuthContext);
+  // const auth = useContext(AuthContext);
+  const dispatch=useDispatch();
+  const isauth=useSelector((state)=>state.auth)
+  console.log('isauth',isauth);
 
   const history = useHistory();
 
@@ -41,7 +46,9 @@ function Login() {
       console.log(respose);
       console.log("User has successfully logged in", respose.data.idToken);
       localStorage.setItem("idToken", respose.data.idToken);
-      auth.login(localStorage.getItem("idToken"));
+      dispatch(authActions.ongetToken(localStorage.getItem('idToken')));
+      console.log('isauthcheck',isauth);
+      // auth.login(localStorage.getItem("idToken"));
       history.replace("/expenses");
     } catch (error) {
       console.log(error.response.data.error.message);

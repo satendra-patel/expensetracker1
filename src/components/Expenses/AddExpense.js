@@ -9,15 +9,22 @@ import {
   MDBInput,
 } from "mdb-react-ui-kit";
 import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { expenseActions} from "../../store/redux";
 
 export default function AddExpense() {
-  const [expense, setexpense] = useState([]);
+  const dispatch = useDispatch();
+  let expense = useSelector((state) => state.expense.expense);
+ 
+  // const [expense, setexpense] = useState([]);
+  const [trigger, settrigger] = useState(false);
   const [edit, setedit] = useState(false);
   const [id, setid] = useState("");
 
   const categoryvalue = useRef();
   const pricevalue = useRef();
   const desvalue = useRef();
+  //<---------------------------------------Edit Expense------------------------------------------->
 
   const editexpense = (price, des, cat, idvalue) => {
     setedit(true);
@@ -27,6 +34,9 @@ export default function AddExpense() {
     desvalue.current.value = des;
     categoryvalue.current.value = cat;
   };
+
+  //<---------------------------------------Main Submit Handler------------------------------------------->
+
   const submithandler = async (event) => {
     event.preventDefault();
 
@@ -53,16 +63,21 @@ export default function AddExpense() {
         des: desvalue.current.value,
         cat: categoryvalue.current.value,
       };
-      axios.post(
+      const res = await axios.post(
         "https://expense-tracker-a7536-default-rtdb.firebaseio.com/expenses.json",
         details
       );
-      setexpense([...expense, details]);
+      // setpost(post+1);
+      if (res.status === 200) settrigger(!trigger);
+      // setexpense([...expense, details]);
+
       pricevalue.current.value = "";
       desvalue.current.value = "";
       categoryvalue.current.value = "";
     }
   };
+
+  //<---------------------------------------Delete  Expense------------------------------------------->
   const deleteexpense = async (id) => {
     setid(id);
     const respose = await axios.delete(
@@ -70,28 +85,48 @@ export default function AddExpense() {
     );
     if (respose.status === 200) {
       console.log("SUCCESSFULLY DELETE EXPENSE");
+
+      settrigger(!trigger);
     }
   };
-  useEffect(() => {
-    async function myfun() {
-      const data = await axios.get(
-        "https://expense-tracker-a7536-default-rtdb.firebaseio.com/expenses.json?print=pretty"
-      );
-      const respose = data.data;
 
-      const trasformData = [];
-      for (const key in respose) {
-        trasformData.push({
-          id: key,
-          price: respose[key].price,
-          des: respose[key].des,
-          cat: respose[key].cat,
-        });
-      }
-      setexpense(trasformData);
+  //<---------------------------------------Use Effect ------------------------------------------->
+  async function myfun() {
+    const data = await axios.get(
+      "https://expense-tracker-a7536-default-rtdb.firebaseio.com/expenses.json?print=pretty"
+    );
+    const respose = await data.data;
+    console.log("espo", respose);
+
+    const trasformData = [];
+    for (const key in respose) {
+      trasformData.push({
+        id: key,
+        price: respose[key].price,
+        des: respose[key].des,
+        cat: respose[key].cat,
+      });
     }
+    console.log("transformdata", trasformData);
+    // setexpense(trasformData);
+    dispatch(expenseActions.onAddOrGetExpense(trasformData));
+  }
+  useEffect(() => {
     myfun();
-  }, [submithandler, deleteexpense]);
+    // console.log('trigger',trigger,expense);
+  }, [trigger]);
+
+  //-----------------------------------THEME CHANGE-----------------------------------------------
+
+  let c = false;
+  expense.map((item) => {
+    c += Number(item.price);
+  });
+  console.log(c);
+
+  const themechange = () => {
+    console.log("Theme change Successful");
+  };
 
   return (
     <form onSubmit={submithandler}>
@@ -202,12 +237,18 @@ export default function AddExpense() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  <br />
 
-                <MDBCardImage
-              src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp"
-              fluid
-            />
+                  {c > 1000 && (
+                    <MDBBtn
+                      style={{ textAlign: "center" }}
+                      onClick={themechange}
+                    >
+                      {" "}
+                      activate Premium
+                    </MDBBtn>
+                  )}
+                </table>
               </MDBCol>
             </MDBRow>
           </MDBCardBody>
